@@ -1,0 +1,65 @@
+.bg-header {
+  z-index: 100;
+  background-color: #2d2b28;
+  padding: 10px;
+  position: sticky;
+  top: -1px;
+
+  .row {
+    margin: 0;
+  }
+
+  .legals-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+
+    .legals {
+      color: #2d2b28;
+      background-color: #fdc600;
+      padding: 5px 10px;
+      font-size: 0.8em;
+      text-align: center;
+    }
+  }
+
+  .login-container {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      background-color: #8c8c8c;
+      color: white;
+      border: none;
+      padding: 5px 15px;
+      font-size: 0.8em;
+    }
+  }
+}
+
+@media (min-width: 480px) {
+  .legals {
+    width: 48%;
+  }
+}
+
+@media (min-width: 768px) {
+  .bg-header {
+    .legals-container {
+      margin-bottom: 0;
+    }
+  }
+}
+
+@media (min-width: 992px) {
+  .bg-header {
+    .legals-container {
+      display: flex;
+      justify-content: flex-start;
+      .legals {
+        margin: 0 10px;
+        width: 40%;
+      }
+    }
+  }
+}
