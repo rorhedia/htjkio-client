@@ -1,4 +1,4 @@
-import Navbar from "../components/Navbar";
+import CustomNavbar from "../components/CustomNavbar";
 import Bullets from "../components/Bullets";
 import CardInfo from "../components/CardInfo";
 
@@ -8,7 +8,7 @@ export default function Home() {
 
   return (
     <div className="">
-      <Navbar />
+      <CustomNavbar />
 
       <section className="container-fluid container-body">
         <div className="row">
