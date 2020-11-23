@@ -20,13 +20,14 @@ export default function CustomNavbar() {
   const toggle = () => setIsOpen(!isOpen);
   const handleLogin = () => {
     login();
-    console.log('object')
+    console.log("object");
   };
-  // const handleClick = (e) => {
-  //   console.log(e);
-  //   e.preventDefault();
-  //   // router.push(href);
-  // };
+
+  const handleClick = (e) => {
+    console.log(e);
+    e.preventDefault();
+    // router.push(href);
+  };
 
   return (
     <>
@@ -57,16 +58,22 @@ export default function CustomNavbar() {
           <Collapse isOpen={isOpen} navbar>
             <Nav className="mr-auto" navbar>
               <NavItem>
-                <NavLink href="#">Mis Ideas</NavLink>
+                <NavLink onClick={() => router.push("/ideas")}>
+                  Mis Ideas
+                </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink href="#">Todas las Ideas</NavLink>
+                <NavLink onClick={() => router.push("/ideas")}>
+                  Todas las Ideas
+                </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink href="#">Crear idea</NavLink>
+                <NavLink onClick={() => router.push("/crear-idea")}>
+                  Crear idea
+                </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink href="#">Cerrar sesión</NavLink>
+                <NavLink onClick={() => router.push("/")}>Cerrar sesión</NavLink>
               </NavItem>
             </Nav>
           </Collapse>
