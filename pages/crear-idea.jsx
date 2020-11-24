@@ -3,9 +3,17 @@ import { useForm } from "react-hook-form";
 
 import CustomNavbar from "../components/CustomNavbar";
 
-import { getCoaches, addIdea } from "../lib/services";
+import { redirectIfNotAuthenticated } from "../lib/auth";
+import { cookieDecode } from "../lib/session";
+import {
+  getCoaches,
+  addIdea,
+  upload,
+  uploadImage,
+  uploadFile,
+} from "../lib/services";
 
-function CreateIdea({ coaches: { coaches } }) {
+function CreateIdea({ coaches: { coaches }, user }) {
   const [message, showMessage] = useState({
     show: false,
     msg: "",
@@ -25,6 +33,37 @@ function CreateIdea({ coaches: { coaches } }) {
   const { register, errors, handleSubmit } = useForm();
 
   const onSubmit = async (data, e) => {
+    let formdata = new FormData();
+    let imageResult, fileResult, uploadResult;
+
+    data.image = !data.image.length ? "" : data.image;
+    data.file = !data.file.length ? "" : data.file;
+
+    if (data.image.length && data.file.length) {
+      formdata.append("image", data.image[0], data.image[0].name);
+      formdata.append("file", data.file[0], data.file[0].name);
+      uploadResult = await upload(formdata);
+
+      if (uploadResult.success === true) {
+        data["image"] = uploadResult.data.image.url;
+        data["file"] = uploadResult.data.file.url;
+      }
+    } else if (data.image.length) {
+      formdata.append("image", data.image[0], data.image[0].name);
+      imageResult = await uploadImage(formdata);
+
+      if (imageResult.success === true) {
+        data["image"] = imageResult.data.url;
+      }
+    } else if (data.file.length) {
+      formdata.append("file", data.file[0], data.file[0].name);
+      fileResult = await uploadFile(formdata);
+
+      if (fileResult.success === true) {
+        data["file"] = fileResult.data.url;
+      }
+    }
+
     let request = {
       ...dataIdea,
       ...data,
@@ -72,7 +111,10 @@ function CreateIdea({ coaches: { coaches } }) {
             )}
           </div>
           <div className="col-12">
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              encType="multipart/form-data"
+            >
               <div className="row">
                 <div className="col-12 col-md-8">
                   <div className="form-group">
@@ -192,8 +234,8 @@ function CreateIdea({ coaches: { coaches } }) {
                     <input
                       type="file"
                       className="custom-file-input"
-                      id="validatedCustomFile"
                       name="file"
+                      ref={register}
                     />
                   </div>
                 </div>
@@ -206,8 +248,8 @@ function CreateIdea({ coaches: { coaches } }) {
                     <input
                       type="file"
                       className="custom-file-input"
-                      id="image-idea"
                       name="image"
+                      ref={register}
                     />
                   </div>
                 </div>
@@ -230,12 +272,22 @@ function CreateIdea({ coaches: { coaches } }) {
   );
 }
 
-CreateIdea.getInitialProps = async (ctx) => {
-  const result = await getCoaches();
+export async function getServerSideProps(ctx) {
+  if (redirectIfNotAuthenticated(ctx)) {
+    return { props: {} };
+  }
+
+  const cookie = cookieDecode("session", ctx.req);
+  const user = cookie.user;
+  const { jsonwebtoken, id } = cookie.user;
+
+  const result = await getCoaches(jsonwebtoken);
 
   let coaches = result.status === "success" ? result.response : {};
 
-  return { coaches };
-};
+  return {
+    props: { coaches, user },
+  };
+}
 
 export default CreateIdea;
