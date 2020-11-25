@@ -47,7 +47,7 @@ function Ideas({ ideas, coaches: { coaches }, users, user }) {
 
   return (
     <div>
-      <CustomNavbar />
+      <CustomNavbar user={user} />
 
       <div className="container">
         <div className="row">
