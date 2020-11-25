@@ -21,7 +21,7 @@ function CreateIdea({ coaches: { coaches }, user }) {
   });
 
   let dataIdea = {
-    user: "5fb695cb2e4ffa112ed7cf08",
+    user: user.id,
     coach: "",
     name: "",
     description: "",
@@ -42,7 +42,7 @@ function CreateIdea({ coaches: { coaches }, user }) {
     if (data.image.length && data.file.length) {
       formdata.append("image", data.image[0], data.image[0].name);
       formdata.append("file", data.file[0], data.file[0].name);
-      uploadResult = await upload(formdata);
+      uploadResult = await upload(user.jsonwebtoken, formdata);
 
       if (uploadResult.success === true) {
         data["image"] = uploadResult.data.image.url;
@@ -50,14 +50,14 @@ function CreateIdea({ coaches: { coaches }, user }) {
       }
     } else if (data.image.length) {
       formdata.append("image", data.image[0], data.image[0].name);
-      imageResult = await uploadImage(formdata);
+      imageResult = await uploadImage(user.jsonwebtoken, formdata);
 
       if (imageResult.success === true) {
         data["image"] = imageResult.data.url;
       }
     } else if (data.file.length) {
       formdata.append("file", data.file[0], data.file[0].name);
-      fileResult = await uploadFile(formdata);
+      fileResult = await uploadFile(user.jsonwebtoken, formdata);
 
       if (fileResult.success === true) {
         data["file"] = fileResult.data.url;
@@ -69,7 +69,7 @@ function CreateIdea({ coaches: { coaches }, user }) {
       ...data,
     };
 
-    const response = await addIdea(request);
+    const response = await addIdea(user.jsonwebtoken, request);
 
     if (response.status === "success") {
       showMessage({
@@ -90,7 +90,7 @@ function CreateIdea({ coaches: { coaches }, user }) {
 
   return (
     <>
-      <CustomNavbar />
+      <CustomNavbar user={user} />
 
       <div className="container mt-5">
         <div className="row">
