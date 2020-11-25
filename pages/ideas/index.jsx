@@ -151,14 +151,14 @@ function Ideas({ ideas, coaches: { coaches }, users, user }) {
 }
 
 export async function getServerSideProps(ctx) {
-  console.log(ctx.req);
   if (redirectIfNotAuthenticated(ctx)) {
     return { props: {} };
   }
-
+  
   const cookie = cookieDecode("session", ctx.req);
   const user = cookie.user;
   const { jsonwebtoken, id } = cookie.user;
+  console.log(cookie);
 
   const resultIdea = await getIdeas(jsonwebtoken);
   let ideas = resultIdea.status === "success" ? resultIdea.response.data : {};
