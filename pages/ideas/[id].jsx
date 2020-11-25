@@ -19,6 +19,7 @@ function Ideas({
   idea: {
     data: { description, effect, image, file, name, status },
   },
+  user,
 }) {
   const router = useRouter();
 
@@ -36,7 +37,7 @@ function Ideas({
   const handleStatus = async (status) => {
     setState(status.status);
 
-    const response = await updateStatusIdea(id, status);
+    const response = await updateStatusIdea(user.jsonwebtoken, id, status);
 
     if (response.status === "success") {
       showMessage({
@@ -57,8 +58,7 @@ function Ideas({
     let value = confirm("¿Seguro que deseas eliminar esta idea?");
 
     if (value) {
-      const response = await deleteIdea(id);
-      console.log(response);
+      const response = await deleteIdea(user.jsonwebtoken, id);
 
       if (response.status === "success") {
         router.push("/ideas");
@@ -78,7 +78,7 @@ function Ideas({
 
   return (
     <div>
-      <CustomNavbar />
+      <CustomNavbar user={user} />
       <div className="container">
         <div className="row mt-5">
           <div className="col-12 d-flex justify-content-between">
@@ -165,9 +165,10 @@ export async function getServerSideProps(ctx) {
     return { props: {} };
   }
 
+  const id = ctx.query.id;
   const cookie = cookieDecode("session", ctx.req);
   const user = cookie.user;
-  const { jsonwebtoken, id } = cookie.user;
+  const { jsonwebtoken } = cookie.user;
 
   const resultIdea = await getIdeasById(jsonwebtoken, id);
   let idea = resultIdea.status === "success" ? resultIdea.response : {};

@@ -2,7 +2,9 @@ import CustomNavbar from "../components/CustomNavbar";
 import Bullets from "../components/Bullets";
 import CardInfo from "../components/CardInfo";
 
-export default function Home() {
+import { redirectIfAuthenticated } from "../lib/auth.js";
+
+function Home() {
   const aboutUs = ["Nosotros", "Blog", "Contacto"];
   const services = ["Servicios Cloud", "Centro de datos", "Ciberseguridad"];
 
@@ -80,3 +82,12 @@ export default function Home() {
     </div>
   );
 }
+
+export async function getServerSideProps(ctx) {
+  if (redirectIfAuthenticated(ctx)) {
+    return { props: {} };
+  }
+  return { props: {} };
+}
+
+export default Home;

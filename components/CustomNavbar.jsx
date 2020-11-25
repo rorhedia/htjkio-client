@@ -18,8 +18,8 @@ export default function CustomNavbar({ user }) {
   const toggle = () => setIsOpen(!isOpen);
 
   const handleLogin = () => {
-    // router.push("https://htj-kio.herokuapp.com/auth/login");
-    router.push("http://localhost:3000/auth/login");
+    router.push("https://htj-kio.herokuapp.com/auth/login");
+    // router.push("http://localhost:3000/auth/login");
   };
 
   return (
@@ -60,30 +60,33 @@ export default function CustomNavbar({ user }) {
             <Nav className="mr-auto" navbar>
               <NavItem>
                 <NavLink onClick={() => router.push("/mis-ideas")}>
-                  Mis Ideas
+                  <span className="hand">Mis Ideas</span>
                 </NavLink>
               </NavItem>
               <NavItem>
                 <NavLink onClick={() => router.push("/ideas")}>
-                  Todas las Ideas
+                  <span className="hand">Todas las Ideas</span>
                 </NavLink>
               </NavItem>
               <NavItem>
                 <NavLink onClick={() => router.push("/crear-idea")}>
-                  Crear idea
+                  <span className="hand">Crear idea</span>
                 </NavLink>
               </NavItem>
               <NavItem>
                 <NavLink
                   onClick={() =>
-                    router.push("http://localhost:3000/auth/logout")
+                    router.push("https://htj-kio.herokuapp.com/auth/logout")
                   }
                 >
-                  Cerrar sesión
+                  <span className="hand">Cerrar sesión</span>
                 </NavLink>
               </NavItem>
             </Nav>
           </Collapse>
+          <p className="text-right text-light mx-4 d-none d-md-block">
+            {user.name}
+          </p>
           <img
             src={user.picture}
             className="rounded-circle float-right"
