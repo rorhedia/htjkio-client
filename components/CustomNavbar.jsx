@@ -76,6 +76,7 @@ export default function CustomNavbar({ user }) {
               <NavItem>
                 <NavLink
                   onClick={() =>
+                    // router.push("http://localhost:3000/auth/logout")
                     router.push("https://htj-kio.herokuapp.com/auth/logout")
                   }
                 >
