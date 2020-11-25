@@ -151,6 +151,7 @@ function Ideas({ ideas, coaches: { coaches }, users, user }) {
 }
 
 export async function getServerSideProps(ctx) {
+  console.log("redirect", redirectIfNotAuthenticated(ctx));
   if (redirectIfNotAuthenticated(ctx)) {
     return { props: {} };
   }
