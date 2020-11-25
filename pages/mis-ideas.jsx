@@ -1,11 +1,11 @@
 import { useState } from "react";
 
-import CustomNavbar from "../../components/CustomNavbar";
-import CardIdea from "../../components/CardIdea";
+import CustomNavbar from "../components/CustomNavbar";
+import CardIdea from "../components/CardIdea";
 
-import { getIdeas, getCoaches, getUsers } from "../../lib/services";
-import { redirectIfNotAuthenticated } from "../../lib/auth";
-import { cookieDecode } from "../../lib/session";
+import { getIdeasByUserId, getCoaches } from "../lib/services";
+import { cookieDecode } from "../lib/session";
+import { redirectIfNotAuthenticated } from "../lib/auth";
 
 import {
   Dropdown,
@@ -17,7 +17,6 @@ import {
 function Ideas({ ideas, coaches: { coaches }, users, user }) {
   const [dropdownOpenStatus, setDropdownOpenStatus] = useState(false);
   const [dropdownOpenCoach, setDropdownOpenCoach] = useState(false);
-  const [dropdownOpenAuthor, setDropdownOpenAuthor] = useState(false);
 
   const [ideasList, setIdeasList] = useState(ideas);
 
@@ -25,13 +24,9 @@ function Ideas({ ideas, coaches: { coaches }, users, user }) {
     setDropdownOpenStatus((prevState) => !prevState);
   const toggleDropdowCoach = () =>
     setDropdownOpenCoach((prevState) => !prevState);
-  const toggleDropdowAuthor = () =>
-    setDropdownOpenAuthor((prevState) => !prevState);
 
   const handleFilter = (filter) => {
     let newIdeas;
-
-    console.log(filter, ideas);
 
     if (filter.key === "status") {
       newIdeas = ideas.filter(({ status }) => filter.value === status);
@@ -108,26 +103,6 @@ function Ideas({ ideas, coaches: { coaches }, users, user }) {
                     ))}
                 </DropdownMenu>
               </Dropdown>
-
-              <Dropdown
-                isOpen={dropdownOpenAuthor}
-                toggle={toggleDropdowAuthor}
-              >
-                <DropdownToggle caret>Creado por</DropdownToggle>
-                <DropdownMenu>
-                  {users.length &&
-                    users.map(({ name, lastname, _id }) => (
-                      <DropdownItem
-                        key={_id}
-                        onClick={() =>
-                          handleFilter({ key: "user", value: _id })
-                        }
-                      >
-                        {name} {lastname}
-                      </DropdownItem>
-                    ))}
-                </DropdownMenu>
-              </Dropdown>
             </div>
           </div>
         </div>
@@ -155,20 +130,18 @@ export async function getServerSideProps(ctx) {
     return { props: {} };
   }
 
-  const cookie = cookieDecode("session", ctx.req);
+  let cookie = cookieDecode("session", ctx.req);
   const user = cookie.user;
   const { jsonwebtoken, id } = cookie.user;
 
-  const resultIdea = await getIdeas(jsonwebtoken);
+  const resultIdea = await getIdeasByUserId(jsonwebtoken, id);
+
   let ideas = resultIdea.status === "success" ? resultIdea.response.data : {};
 
   const resultCoach = await getCoaches(jsonwebtoken);
   let coaches = resultCoach.status === "success" ? resultCoach.response : {};
 
-  const resultUsers = await getUsers(jsonwebtoken);
-  let users = resultUsers.status === "success" ? resultUsers.response : {};
-
-  return { props: { ideas, coaches, users, user } };
+  return { props: { ideas, coaches, user } };
 }
 
 export default Ideas;

@@ -10,23 +10,16 @@ import {
   NavLink,
 } from "reactstrap";
 
-import { login } from "../lib/services";
-
-export default function CustomNavbar() {
+export default function CustomNavbar({ user }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const router = useRouter();
 
   const toggle = () => setIsOpen(!isOpen);
-  const handleLogin = () => {
-    login();
-    console.log("object");
-  };
 
-  const handleClick = (e) => {
-    console.log(e);
-    e.preventDefault();
-    // router.push(href);
+  const handleLogin = () => {
+    router.push("https://htj-kio.herokuapp.com/auth/login");
+    // router.push("http://localhost:3000/auth/login");
   };
 
   return (
@@ -35,10 +28,18 @@ export default function CustomNavbar() {
         <header className="container-fluid bg-header">
           <nav className="row">
             <div className="col-12 col-md-6 legals-container">
-              <a className="legals" href="#" target="_blank">
+              <a
+                className="legals"
+                href="/avisodeprivacidad.pdf"
+                target="_blank"
+              >
                 Aviso de privacidad
               </a>
-              <a className="legals" href="#" target="_blank">
+              <a
+                className="legals"
+                href="/terminosycondiciones.pdf"
+                target="_blank"
+              >
                 Términos y condiciones
               </a>
             </div>
@@ -58,27 +59,36 @@ export default function CustomNavbar() {
           <Collapse isOpen={isOpen} navbar>
             <Nav className="mr-auto" navbar>
               <NavItem>
-                <NavLink onClick={() => router.push("/ideas")}>
-                  Mis Ideas
+                <NavLink onClick={() => router.push("/mis-ideas")}>
+                  <span className="hand">Mis Ideas</span>
                 </NavLink>
               </NavItem>
               <NavItem>
                 <NavLink onClick={() => router.push("/ideas")}>
-                  Todas las Ideas
+                  <span className="hand">Todas las Ideas</span>
                 </NavLink>
               </NavItem>
               <NavItem>
                 <NavLink onClick={() => router.push("/crear-idea")}>
-                  Crear idea
+                  <span className="hand">Crear idea</span>
                 </NavLink>
               </NavItem>
               <NavItem>
-                <NavLink onClick={() => router.push("/")}>Cerrar sesión</NavLink>
+                <NavLink
+                  onClick={() =>
+                    router.push("https://htj-kio.herokuapp.com/auth/logout")
+                  }
+                >
+                  <span className="hand">Cerrar sesión</span>
+                </NavLink>
               </NavItem>
             </Nav>
           </Collapse>
+          <p className="text-right text-light mx-4 d-none d-md-block">
+            {user.name}
+          </p>
           <img
-            src="/download.jpeg"
+            src={user.picture}
             className="rounded-circle float-right"
             alt="logo"
           ></img>

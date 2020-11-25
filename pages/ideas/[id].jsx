@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 import CustomNavbar from "../../components/CustomNavbar";
-import CardIdea from "../../components/CardIdea";
 
-import { getIdeasById, getCoaches } from "../../lib/services";
+import { getIdeasById, updateStatusIdea, deleteIdea } from "../../lib/services";
+import { cookieDecode } from "../../lib/session";
+import { redirectIfNotAuthenticated } from "../../lib/auth";
 
 import {
   Dropdown,
@@ -12,128 +14,166 @@ import {
   DropdownItem,
 } from "reactstrap";
 
-function Ideas({ ideas, coaches: { coaches }, users }) {
-  const [dropdownOpenStatus, setDropdownOpenStatus] = useState(false);
-  const [dropdownOpenCoach, setDropdownOpenCoach] = useState(false);
-  const [dropdownOpenAuthor, setDropdownOpenAuthor] = useState(false);
+function Ideas({
+  id,
+  idea: {
+    data: { description, effect, image, file, name, status },
+  },
+  user,
+}) {
+  const router = useRouter();
 
-  const [ideasList, setIdeasList] = useState(ideas);
+  const [dropdownStatus, setDropdownStatus] = useState(false);
+  const [state, setState] = useState(status);
+  const [message, showMessage] = useState({
+    show: false,
+    msg: "",
+    type: "",
+  });
 
   const toggleDropdownStatus = () =>
-    setDropdownOpenStatus((prevState) => !prevState);
-  const toggleDropdowCoach = () =>
-    setDropdownOpenCoach((prevState) => !prevState);
-  const toggleDropdowAuthor = () =>
-    setDropdownOpenAuthor((prevState) => !prevState);
+    setDropdownStatus((prevState) => !prevState);
 
-  const handleFilter = (filter) => {
-    let newIdeas;
+  const handleStatus = async (status) => {
+    setState(status.status);
 
-    if (filter.key === "status") {
-      newIdeas = ideas.filter(({ status }) => filter.value === status);
-    } else if (filter.key === "coach") {
-      newIdeas = ideas.filter(({ coach: { _id } }) => filter.value === _id);
-    } else if (filter.key === "user") {
-      newIdeas = ideas.filter(({ user: { _id } }) => filter.value === _id);
+    const response = await updateStatusIdea(user.jsonwebtoken, id, status);
+
+    if (response.status === "success") {
+      showMessage({
+        show: true,
+        msg: "¡El estado de actualizó exitosamente!",
+        type: "alert alert-success alert-dismissible fade show",
+      });
+    } else {
+      showMessage({
+        show: true,
+        msg: response.response.message,
+        type: "alert alert-danger alert-dismissible fade show",
+      });
     }
-
-    setIdeasList(newIdeas);
   };
 
-  const emptyIdeas = (
-    <div className="alert alert-warning" role="alert">
-      No hay ideas para mostrar
-    </div>
-  );
+  const handleDelete = async () => {
+    let value = confirm("¿Seguro que deseas eliminar esta idea?");
+
+    if (value) {
+      const response = await deleteIdea(user.jsonwebtoken, id);
+
+      if (response.status === "success") {
+        router.push("/ideas");
+      } else {
+        showMessage({
+          show: true,
+          msg: response.response.message,
+          type: "alert alert-danger alert-dismissible fade show",
+        });
+      }
+    }
+  };
+
+  let img =
+    image ||
+    "https://htjkio.s3.us-east-2.amazonaws.com/2020-11-24T02%3A35%3A24.414Z-default.png";
 
   return (
     <div>
-      <CustomNavbar />
-
+      <CustomNavbar user={user} />
       <div className="container">
-        <div className="row">
-          <div className="col-12 ">
-            <div className="filters-container">
-              <Dropdown
-                isOpen={dropdownOpenStatus}
-                toggle={toggleDropdownStatus}
-              >
-                <DropdownToggle caret>Estatus</DropdownToggle>
-                <DropdownMenu>
-                  <DropdownItem
-                    onClick={() =>
-                      handleFilter({ key: "status", value: "Aprobado" })
-                    }
-                  >
-                    Aprobado
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() =>
-                      handleFilter({ key: "status", value: "Rechazado" })
-                    }
-                  >
-                    Rechazado
-                  </DropdownItem>
-                  <DropdownItem
-                    onClick={() =>
-                      handleFilter({ key: "status", value: "Pendiente" })
-                    }
-                  >
-                    Pendiente
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-
-              <Dropdown
-                isOpen={dropdownOpenCoach}
-                toggle={toggleDropdowCoach}
-                className="mx-1"
-              >
-                <DropdownToggle caret>Coach</DropdownToggle>
-                <DropdownMenu>
-                  {coaches.length &&
-                    coaches.map(({ name, lastname, _id }) => (
-                      <DropdownItem
-                        key={_id}
-                        onClick={() =>
-                          handleFilter({ key: "coach", value: _id })
-                        }
-                      >
-                        {name} {lastname}
-                      </DropdownItem>
-                    ))}
-                </DropdownMenu>
-              </Dropdown>
-            </div>
+        <div className="row mt-5">
+          <div className="col-12 d-flex justify-content-between">
+            <Dropdown isOpen={dropdownStatus} toggle={toggleDropdownStatus}>
+              <DropdownToggle caret>Estatus</DropdownToggle>
+              <DropdownMenu>
+                <DropdownItem
+                  onClick={() => handleStatus({ status: "Pendiente" })}
+                >
+                  Pendiente
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => handleStatus({ status: "Aprobado" })}
+                >
+                  Aprobar
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => handleStatus({ status: "Rechazado" })}
+                >
+                  Rechazar
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+            {file && (
+              <a href={file}>
+                <button className="btn btn-primary">Descargar archivo</button>
+              </a>
+            )}
           </div>
         </div>
 
-        <div className="row row-cols-1 row-cols-md-3">
-          {ideasList.length
-            ? ideasList.map(({ _id, name, status }) => (
-                <CardIdea key={_id} id={_id} name={name} status={status} />
-              ))
-            : emptyIdeas}
+        <div className="row mt-2">
+          <div className="col-12 ">
+            {message.show && (
+              <div className={message.type} role="alert">
+                {message.msg}
+                <button
+                  type="button"
+                  className="close"
+                  data-dismiss="alert"
+                  aria-label="Close"
+                  onClick={() => showMessage({ show: false })}
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="row mt-5 d-flex justify-content-center">
+          <div className="col-12 col-md-6">
+            <div className="card-deck">
+              <div className="card">
+                <img className="card-img-top" src={img} alt="Card image cap" />
+                <div className="card-body">
+                  <h3 className="card-title">{name}</h3>
+                  <h5 className="card-title">Descripción:</h5>
+                  <p className="card-text">{description}</p>
+
+                  <h5 className="card-title">Impacto:</h5>
+                  <p className="card-text">{effect}</p>
+                </div>
+                <div className="card-footer d-flex justify-content-between">
+                  <small className="text-muted">{state}</small>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={handleDelete}
+                  >
+                    Eliminar idea
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-Ideas.getInitialProps = async (ctx) => {
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVmYjY5NGRjYmE2MjUwMTBkNTAxNzU4ZCIsImlhdCI6MTYwNjA4MDAxOSwiZXhwIjoxNjA2MTY2NDE5fQ.Gk7mr_FY12ws5Tqa12JguCZIV3uwW_7M-8Xu4mT_HH0";
+export async function getServerSideProps(ctx) {
+  if (redirectIfNotAuthenticated(ctx)) {
+    return { props: {} };
+  }
 
   const id = ctx.query.id;
+  const cookie = cookieDecode("session", ctx.req);
+  const user = cookie.user;
+  const { jsonwebtoken } = cookie.user;
 
-  const resultIdea = await getIdeasById(token, id);
-  console.log(resultIdea)
-  let ideas = resultIdea.status === "success" ? resultIdea.response.data : {};
+  const resultIdea = await getIdeasById(jsonwebtoken, id);
+  let idea = resultIdea.status === "success" ? resultIdea.response : {};
 
-  const resultCoach = await getCoaches();
-  let coaches = resultCoach.status === "success" ? resultCoach.response : {};
-
-  return { ideas, coaches };
-};
+  return { props: { id, idea, user } };
+}
 
 export default Ideas;
